@@ -1,0 +1,40 @@
+{
+  "name": "tp5er/think-base",
+  "license": "MIT",
+  "description": "延续老版本方法或类到thinkphp6版本以上",
+  "type": "library",
+  "keywords": [
+    "php",
+    "thinkphp"
+  ],
+  "authors": [
+    {
+      "name": "zhiqiang",
+      "email": "zhiqiang2033@gmail.com"
+    }
+  ],
+  "require": {
+    "php": ">=7.1.0",
+    "ext-json": "*",
+    "topthink/framework": "^6.0 || ^8.0"
+  },
+  "autoload": {
+    "psr-4": {
+      "tp5er\\think\\": "src/"
+    },
+    "files": [
+      "src/helper.php"
+    ]
+  },
+  "require-dev": {
+    "friendsofphp/php-cs-fixer": "^3.9",
+    "topthink/think-view": "^1.0"
+  },
+  "extra": {
+    "think": {
+      "services": [
+        "tp5er\\think\\Service"
+      ]
+    }
+  }
+}
