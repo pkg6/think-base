@@ -14,7 +14,7 @@
 
 namespace tp5er\think;
 
-use tp5er\think\library\Jump;
+use tp5er\think\jump\Jump;
 
 class Service extends \think\Service
 {

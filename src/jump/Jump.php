@@ -12,10 +12,11 @@
  * This source file is subject to the MIT license that is bundled.
  */
 
-namespace tp5er\think\library;
+namespace tp5er\think\jump;
 
 use think\App;
 use think\Response;
+use tp5er\think\jump\data\Think;
 
 class Jump
 {
@@ -42,11 +43,9 @@ class Jump
     protected $default_ajax_return = "json";
 
     /**
-     * msg 多语言启动.
-     *
-     * @var bool
+     * @var mixed
      */
-    protected $useLang = false;
+    protected $responseData = null;
 
     /**
      * @param App $app
@@ -68,7 +67,7 @@ class Jump
         $this->dispatch_error_tmpl = $this->app->config->get("app.dispatch_error_tmpl", $dispatch_error_tmpl);
         $this->default_return_type = $this->app->config->get("app.default_return_type", 'html');
         $this->default_ajax_return = $this->app->config->get("app.default_ajax_return", 'json');
-        $this->useLang = $this->app->config->get("app.jump_use_lang", false);
+        $this->responseData = $this->app->config->get("app.jump_response_data", Think::class);
     }
 
     /**
@@ -89,20 +88,13 @@ class Jump
         if (is_null($url) && isset($_SERVER["HTTP_REFERER"])) {
             $url = $_SERVER["HTTP_REFERER"];
         } elseif ('' !== $url) {
-            $url = (strpos($url, '://') || 0 === strpos($url, '/')) ? $url : (string) $this->app->route->buildUrl($url);
+            $url = (strpos($url, '://') || 0 === strpos($url, '/'))
+                ? $url
+                : $this->app->route->buildUrl($url ?? "")->build();
         }
 
-        if ($this->useLang) {
-            $msg = $this->app->lang->get($msg);
-        }
-
-        $result = [
-            'code' => 0,
-            'msg' => $msg,
-            'data' => $data,
-            'url' => $url,
-            'wait' => $wait,
-        ];
+        $result = $this->responseData(0, $msg, $data, $url, $wait)
+            ->render();
         if ($type == "html") {
             $response = Response::create($this->dispatch_success_tmpl, 'view')
                 ->assign($result)
@@ -134,18 +126,9 @@ class Jump
         } elseif ('' !== $url) {
             $url = (strpos($url, '://') || 0 === strpos($url, '/')) ? $url : (string) $this->app->route->buildUrl($url);
         }
-
-        if ($this->useLang) {
-            $msg = $this->app->lang->get($msg);
-        }
-
-        $result = [
-            'code' => 1,
-            'msg' => $msg,
-            'data' => $data,
-            'url' => $url,
-            'wait' => $wait,
-        ];
+        $result = $this->responseData(1, $msg, $data, $url, $wait)
+            ->render();
+        ;
         if ('html' == strtolower($type)) {
             $response = Response::create($this->dispatch_success_tmpl, 'view')
                 ->assign($result)
@@ -171,18 +154,42 @@ class Jump
      */
     public function result($data, $code = 0, $msg = '', $type = '', array $header = [])
     {
-        if ($this->useLang) {
-            $msg = $this->app->lang->get($msg);
-        }
-        $result = [
-            'code' => $code,
-            'msg' => $msg,
-            'time' => $this->app->request->server('REQUEST_TIME'),
-            'data' => $data,
-        ];
+        $result = $this->responseData($code, $msg, $data)
+            ->result();
         $type = $type ?: $this->getResponseType();
 
         return Response::create($result, $type)->header($header);
+    }
+
+    /**
+     * @param int $code
+     * @param string $msg
+     * @param mixed $data
+     * @param string $url
+     * @param int $wait
+     *
+     * @return ResponseData|string
+     */
+    public function responseData($code, $msg, $data, $url = "", $wait = 3)
+    {
+
+        $response = $this->responseData;
+        if (class_exists($this->responseData)) {
+            $response = new  $response;
+        }
+        if ($response instanceof ResponseData) {
+            $response->setApp($this->app);
+            $response->setCode($code);
+            $response->setMsg($msg);
+            $response->setData($data);
+            $response->setUrl($url);
+            $response->setWait($wait);
+
+            return $response;
+        }
+        throw new \InvalidArgumentException(
+            "responseData is not defined or implements to" . ResponseData::class
+        );
     }
 
     /**
