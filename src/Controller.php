@@ -70,6 +70,27 @@ class Controller
     protected $beforeActionList = [];
 
     /**
+     * 当前模块名称.
+     *
+     * @var string
+     */
+    protected $currentModule = "";
+
+    /**
+     * 当前控制器.
+     *
+     * @var string
+     */
+    protected $currentController = "";
+
+    /**
+     * 当前控制器方法.
+     *
+     * @var string
+     */
+    protected $currentAction = "";
+
+    /**
      * 构造方法.
      *
      * @param App $app 应用对象
@@ -85,6 +106,11 @@ class Controller
 
         $this->view = $this->app->get("view");
         $this->engine = $this->view->engine();
+
+        $this->currentModule = $this->app->http->getName();
+        $this->currentController = $this->request->controller();
+        $this->currentAction = $this->request->action();
+
         // 控制器初始化
         $this->_initialize();
 
