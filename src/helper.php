@@ -75,3 +75,112 @@ if ( ! function_exists('loader_parse_name')) {
         return strtolower(trim(preg_replace("/[A-Z]/", "_\\0", $name), "_"));
     }
 }
+
+if ( ! function_exists('retry')) {
+    /**
+     * Retry an operation a given number of times.
+     *
+     * @param int|array $times
+     * @param callable $callback
+     * @param int|Closure $sleepMilliseconds
+     * @param callable|null $when
+     *
+     * @return mixed
+     *
+     * @throws Exception
+     */
+    function retry($times, callable $callback, $sleepMilliseconds = 0, $when = null)
+    {
+        $attempts = 0;
+        $backoff = [];
+        if (is_array($times)) {
+            $backoff = $times;
+            $times = count($times) + 1;
+        }
+        beginning:
+        $attempts++;
+        $times--;
+        try {
+            return $callback($attempts);
+        } catch (Exception $e) {
+            if ($times < 1 || ($when && ! $when($e))) {
+                throw $e;
+            }
+            $sleepMilliseconds = isset($backoff[$attempts - 1]) ? $backoff[$attempts - 1] : $sleepMilliseconds;
+            if ($sleepMilliseconds) {
+                usleep(value($sleepMilliseconds, $attempts) * 1000);
+            }
+            goto beginning;
+        }
+    }
+}
+
+if ( ! function_exists('head')) {
+    /**
+     * Get the first element of an array. Useful for method chaining.
+     *
+     * @param array $array
+     *
+     * @return mixed
+     */
+    function head($array)
+    {
+        return reset($array);
+    }
+}
+
+if ( ! function_exists('last')) {
+    /**
+     * Get the last element from an array.
+     *
+     * @param array $array
+     *
+     * @return mixed
+     */
+    function last($array)
+    {
+        return end($array);
+    }
+}
+
+if ( ! function_exists('cpu_count')) {
+
+    /**
+     * @return int
+     */
+    function cpu_count()
+    {
+        if (\DIRECTORY_SEPARATOR === '\\') {
+            return 1;
+        }
+        $count = 4;
+        if (is_callable('shell_exec')) {
+            if (strtolower(PHP_OS) === 'darwin') {
+                $count = (int) shell_exec('sysctl -n machdep.cpu.core_count');
+            } else {
+                $count = (int) shell_exec('nproc');
+            }
+        }
+
+        return $count > 0 ? $count : 4;
+    }
+}
+
+if ( ! function_exists('mkdirs')) {
+    /**
+     * 创建多级目录.
+     *
+     * @param string $path 目录路径
+     * @param int $mod 目录权限（windows忽略）
+     *
+     * @return   true|false
+     */
+    function mkdirs($path, $mod = 0777)
+    {
+        if ( ! is_dir($path)) {
+            return mkdir($path, $mod, true);
+        }
+
+        return false;
+    }
+}
