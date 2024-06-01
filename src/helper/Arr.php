@@ -23,7 +23,7 @@ class Arr extends \think\helper\Arr
      * Converts an object or an array of objects into an array.
      *
      * @param object|array|string $object the object to be converted into an array
-     * @param array               $properties a mapping from object class names to the properties that need to put into the resulting arrays.
+     * @param array $properties a mapping from object class names to the properties that need to put into the resulting arrays.
      * The properties specified for each class is an array of the following format:
      * ```php
      * [
@@ -48,7 +48,7 @@ class Arr extends \think\helper\Arr
      *     'length' => 301,
      * ]
      * ```
-     * @param bool                $recursive whether to recursively converts properties which are objects into arrays.
+     * @param bool $recursive whether to recursively converts properties which are objects into arrays.
      *
      * @return array the array representation of the object
      *
@@ -94,6 +94,7 @@ class Arr extends \think\helper\Arr
 
         return [$object];
     }
+
     /**
      * Removes items with matching values from the array and returns the removed items.
      * Example,
@@ -124,6 +125,7 @@ class Arr extends \think\helper\Arr
 
         return $result;
     }
+
     /**
      * Builds a map (key-value pairs) from a multidimensional array or an array of objects.
      * The `$from` and `$to` parameters specify the key names or property names to set up the map.
@@ -155,9 +157,9 @@ class Arr extends \think\helper\Arr
      * // ]
      * ```.
      *
-     * @param array                $array
-     * @param string|\Closure      $from
-     * @param string|\Closure      $to
+     * @param array $array
+     * @param string|\Closure $from
+     * @param string|\Closure $to
      * @param string|\Closure|null $group
      *
      * @return array
@@ -197,9 +199,9 @@ class Arr extends \think\helper\Arr
      * });
      * ```.
      *
-     * @param array                     $array
+     * @param array $array
      * @param int|string|array|\Closure $name
-     * @param bool                      $keepKeys whether to maintain the array keys. If false, the resulting array
+     * @param bool $keepKeys whether to maintain the array keys. If false, the resulting array
      * will be re-indexed with integers.
      *
      * @return array the list of column values
@@ -297,13 +299,13 @@ class Arr extends \think\helper\Arr
      * ]
      * ```.
      *
-     * @param array                           $array the array that needs to be indexed or grouped
-     * @param string|\Closure|null            $key the column name or anonymous function which result will be used to index the array
+     * @param array $array the array that needs to be indexed or grouped
+     * @param string|\Closure|null $key the column name or anonymous function which result will be used to index the array
      * @param string|string[]|\Closure[]|null $groups the array of keys, that will be used to group the input array
      * by one or more keys. If the $key attribute or its value for the particular element is null and $groups is not
      * defined, the array element will be discarded. Otherwise, if $groups is specified, array element will be added
      * to the result array without any key. This parameter is available since version 2.0.8.
-     * @param bool                            $keepKeys
+     * @param bool $keepKeys
      *
      * @return array the indexed and/or grouped array
      *
@@ -344,17 +346,18 @@ class Arr extends \think\helper\Arr
 
         return $result;
     }
+
     /**
      * Sorts an array of objects or arrays (with the same structure) by one or several keys.
      *
-     * @param array                 $array the array to be sorted. The array will be modified after calling this method.
+     * @param array $array the array to be sorted. The array will be modified after calling this method.
      * @param string|\Closure|array $key the key(s) to be sorted by. This refers to a key name of the sub-array
      * elements, a property name of the objects, or an anonymous function returning the values for comparison
      * purpose. The anonymous function signature should be: `function($item)`.
      * To sort by multiple keys, provide an array of keys here.
-     * @param int|array             $direction the sorting direction. It can be either `SORT_ASC` or `SORT_DESC`.
+     * @param int|array $direction the sorting direction. It can be either `SORT_ASC` or `SORT_DESC`.
      * When sorting by multiple keys with different sorting directions, use an array of sorting directions.
-     * @param int|array             $sortFlag the PHP sort flag. Valid values include
+     * @param int|array $sortFlag the PHP sort flag. Valid values include
      * `SORT_REGULAR`, `SORT_NUMERIC`, `SORT_STRING`, `SORT_LOCALE_STRING`, `SORT_NATURAL` and `SORT_FLAG_CASE`.
      * Please refer to [PHP manual](https://www.php.net/manual/en/function.sort.php)
      * for more details. When sorting by multiple keys with different sort flags, use an array of sort flags.
@@ -403,7 +406,7 @@ class Arr extends \think\helper\Arr
      * Note that an empty array will be considered indexed.
      *
      * @param array $array the array being checked
-     * @param bool  $consecutive whether the array keys must be a consecutive sequence
+     * @param bool $consecutive whether the array keys must be a consecutive sequence
      * in order for the array to be treated as indexed.
      *
      * @return bool whether the array is indexed
@@ -428,6 +431,7 @@ class Arr extends \think\helper\Arr
 
         return true;
     }
+
     /**
      * Returns a value indicating whether the given array is an associative array.
      * An array is associative if all its keys are strings. If `$allStrings` is false,
@@ -435,7 +439,7 @@ class Arr extends \think\helper\Arr
      * Note that an empty array will NOT be considered associative.
      *
      * @param array $array the array being checked
-     * @param bool  $allStrings whether the array keys must be all strings in order for
+     * @param bool $allStrings whether the array keys must be all strings in order for
      * the array to be treated as associative.
      *
      * @return bool whether the array is associative
@@ -533,6 +537,7 @@ class Arr extends \think\helper\Arr
 
         return false;
     }
+
     /**
      * Checks whether a variable is an array or [[Traversable]].
      *
@@ -548,5 +553,36 @@ class Arr extends \think\helper\Arr
     public static function isTraversable($var)
     {
         return is_array($var) || $var instanceof Traversable;
+    }
+
+    /**
+     * 在数组中查询查询val 是否在$value中.
+     *
+     * @param array $array
+     * @param mixed|callable $value
+     *
+     * @return bool
+     */
+    public static function hasValue($array, $value)
+    {
+        // 如果传入的数组为空或者值为空数组，则直接返回false
+        if ( ! $array || empty($value)) {
+            return false;
+        }
+        $value = self::wrap($value);
+        // 遍历数组
+        foreach ($array as $i => $val1) {
+            if (is_array($val1)) {
+                return self::hasValue($val1, $value);
+            } else {
+                foreach ($value as $val) {
+                    if ((is_callable($val) && (bool) $val($val1) === true) || $val === $val1) {
+                        return true;
+                    }
+                }
+            }
+        }
+
+        return false;
     }
 }
